@@ -150,16 +150,26 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center pt-16">
-      <Card className="w-full max-w-md mx-4 max-h-[80vh] overflow-hidden">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div
+        className={`fixed inset-0 bg-black bg-opacity-30 transition-opacity duration-300 ${
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={onClose}
+      />
+      <Card
+        className={`w-full max-w-md h-full bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <CardHeader className="bg-gray-50 border-b">
+          <CardTitle className="flex items-center justify-between text-gray-900">
             <div className="flex items-center space-x-2">
-              <Bell className="w-5 h-5" />
+              <Bell className="w-5 h-5 text-gray-900" />
               <span>Notifications</span>
-              {unreadCount > 0 && <Badge variant="destructive">{unreadCount}</Badge>}
+              {unreadCount > 0 && <Badge variant="destructive" className="bg-red-500 text-white">{unreadCount}</Badge>}
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose}>
+            <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-600 hover:text-gray-900">
               <X className="w-4 h-4" />
             </Button>
           </CardTitle>
@@ -175,12 +185,12 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                 ) : (
                   <BellOff className="w-4 h-4 text-gray-400" />
                 )}
-                <span className="text-sm font-medium">
+                <span className="text-sm font-medium text-gray-900">
                   {notificationsEnabled ? "Notifications Enabled" : "Notifications Disabled"}
                 </span>
               </div>
               {!notificationsEnabled && (
-                <Button size="sm" onClick={requestNotificationPermission}>
+                <Button size="sm" onClick={requestNotificationPermission} className="bg-blue-500 text-white hover:bg-blue-600">
                   Enable
                 </Button>
               )}
@@ -189,13 +199,13 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
 
           {/* Actions */}
           {notifications.length > 0 && (
-            <div className="p-4 border-b flex items-center justify-between">
+            <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={markAllAsRead}
                 disabled={unreadCount === 0}
-                className="flex items-center space-x-1"
+                className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
               >
                 <Check className="w-4 h-4" />
                 <span>Mark all read</span>
@@ -204,7 +214,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                 variant="ghost"
                 size="sm"
                 onClick={clearAllNotifications}
-                className="text-red-600 hover:text-red-700"
+                className="text-red-500 hover:text-red-700"
               >
                 Clear all
               </Button>
@@ -212,7 +222,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
           )}
 
           {/* Notifications List */}
-          <div className="max-h-96 overflow-y-auto">
+          <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
             {notifications.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
                 <Bell className="w-12 h-12 mx-auto mb-3 text-gray-300" />
@@ -226,8 +236,8 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                   .map((notification) => (
                     <div
                       key={notification.id}
-                      className={`p-4 border-b hover:bg-gray-50 transition-colors ${
-                        !notification.read ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
+                      className={`p-4 border-b hover:bg-gray-100 transition-colors ${
+                        !notification.read ? "bg-blue-50" : "bg-white"
                       }`}
                     >
                       <div className="flex items-start space-x-3">
@@ -251,7 +261,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => markAsRead(notification.id)}
-                                  className="h-6 w-6 p-0"
+                                  className="h-6 w-6 p-0 text-gray-600 hover:text-gray-900"
                                 >
                                   <Check className="w-3 h-3" />
                                 </Button>
