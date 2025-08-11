@@ -5,12 +5,19 @@ import { useApp } from "@/app/providers"
 import { useTranslation } from "@/lib/translations"
 import { useLocalStorage } from "@/hooks/useLocalStorage"
 import type { SearchFilters } from "@/types"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "@/hooks/use-toast"
 import { Save, Search, Trash2, Bell, BellOff, Plus, X } from "lucide-react"
+import {
+  Drawer,
+  DrawerTrigger,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerClose
+} from "@/components/ui/drawer"
 
 interface SavedSearch {
   id: string
@@ -114,128 +121,144 @@ export function SavedSearches({ currentFilters, onLoadSearch }: SavedSearchesPro
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+    <Drawer direction="right">
+      <DrawerTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center space-x-2"
+        >
+          <Save className="w-4 h-4" />
+          <span>Saved Searches</span>
+          <Badge variant="secondary">{savedSearches.length}</Badge>
+        </Button>
+      </DrawerTrigger>
+
+      <DrawerContent className="bg-white w-[400px] p-4 overflow-y-auto">
+        <DrawerHeader className="flex items-center justify-between">
+          <DrawerTitle className="flex items-center space-x-2">
             <Save className="w-5 h-5" />
             <span>Saved Searches</span>
             <Badge variant="secondary">{savedSearches.length}</Badge>
-          </div>
+          </DrawerTitle>
+          <DrawerClose asChild>
+            <Button variant="ghost" size="sm">
+              <X className="w-4 h-4" />
+            </Button>
+          </DrawerClose>
+        </DrawerHeader>
+
+        <div className="space-y-4">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setIsCreating(true)}
-            className="flex items-center space-x-1"
+            className="flex items-center space-x-1 w-full"
           >
             <Plus className="w-4 h-4" />
             <span>Save Current</span>
           </Button>
-        </CardTitle>
-      </CardHeader>
 
-      <CardContent className="space-y-4">
-        {/* Create New Search */}
-        {isCreating && (
-          <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm font-medium mb-1 block">Search Name</label>
-                <Input
-                  value={searchName}
-                  onChange={(e) => setSearchName(e.target.value)}
-                  placeholder="e.g., Berlin 2-bedroom apartments"
-                  onKeyDown={(e) => e.key === "Enter" && saveCurrentSearch()}
-                />
-              </div>
-              <div className="text-sm text-gray-600">
-                <strong>Current filters:</strong> {getSearchSummary(currentFilters)}
-              </div>
-              <div className="flex space-x-2">
-                <Button onClick={saveCurrentSearch} size="sm">
-                  <Save className="w-4 h-4 mr-1" />
-                  Save Search
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setIsCreating(false)
-                    setSearchName("")
-                  }}
-                >
-                  <X className="w-4 h-4 mr-1" />
-                  Cancel
-                </Button>
+          {isCreating && (
+            <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Search Name</label>
+                  <Input
+                    value={searchName}
+                    onChange={(e) => setSearchName(e.target.value)}
+                    placeholder="e.g., Berlin 2-bedroom apartments"
+                    onKeyDown={(e) => e.key === "Enter" && saveCurrentSearch()}
+                  />
+                </div>
+                <div className="text-sm text-gray-600">
+                  <strong>Current filters:</strong> {getSearchSummary(currentFilters)}
+                </div>
+                <div className="flex space-x-2">
+                  <Button onClick={saveCurrentSearch} size="sm">
+                    <Save className="w-4 h-4 mr-1" />
+                    Save Search
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setIsCreating(false)
+                      setSearchName("")
+                    }}
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    Cancel
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Saved Searches List */}
-        {savedSearches.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <Save className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p>No saved searches yet</p>
-            <p className="text-sm">Save your current search to quickly access it later</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {savedSearches
-              .sort((a, b) => b.lastUsed - a.lastUsed)
-              .map((search) => (
-                <div key={search.id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <h4 className="font-medium">{search.name}</h4>
-                      <p className="text-sm text-gray-600 mt-1">{getSearchSummary(search.filters)}</p>
+          {savedSearches.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <Save className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p>No saved searches yet</p>
+              <p className="text-sm">Save your current search to quickly access it later</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {savedSearches
+                .sort((a, b) => b.lastUsed - a.lastUsed)
+                .map((search) => (
+                  <div key={search.id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <h4 className="font-medium">{search.name}</h4>
+                        <p className="text-sm text-gray-600 mt-1">{getSearchSummary(search.filters)}</p>
+                      </div>
+                      <div className="flex items-center space-x-1 ml-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleNotifications(search.id)}
+                          className={`h-8 w-8 p-0 ${search.notifications ? "text-blue-600" : "text-gray-400"}`}
+                        >
+                          {search.notifications ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteSearch(search.id)}
+                          className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-1 ml-4">
+
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs text-gray-500">
+                        Created {formatDate(search.createdAt)} • Last used {formatDate(search.lastUsed)}
+                      </div>
                       <Button
-                        variant="ghost"
+                        onClick={() => loadSearch(search)}
                         size="sm"
-                        onClick={() => toggleNotifications(search.id)}
-                        className={`h-8 w-8 p-0 ${search.notifications ? "text-blue-600" : "text-gray-400"}`}
+                        variant="outline"
+                        className="flex items-center space-x-1"
                       >
-                        {search.notifications ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteSearch(search.id)}
-                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
+                        <Search className="w-4 h-4" />
+                        <span>Load</span>
                       </Button>
                     </div>
-                  </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs text-gray-500">
-                      Created {formatDate(search.createdAt)} • Last used {formatDate(search.lastUsed)}
-                    </div>
-                    <Button
-                      onClick={() => loadSearch(search)}
-                      size="sm"
-                      variant="outline"
-                      className="flex items-center space-x-1"
-                    >
-                      <Search className="w-4 h-4" />
-                      <span>Load</span>
-                    </Button>
+                    {search.notifications && (
+                      <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-700">
+                        <Bell className="w-3 h-3 inline mr-1" />
+                        You'll be notified of new apartments matching this search
+                      </div>
+                    )}
                   </div>
-
-                  {search.notifications && (
-                    <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-700">
-                      <Bell className="w-3 h-3 inline mr-1" />
-                      You'll be notified of new apartments matching this search
-                    </div>
-                  )}
-                </div>
-              ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                ))}
+            </div>
+          )}
+        </div>
+      </DrawerContent>
+    </Drawer>
   )
 }
